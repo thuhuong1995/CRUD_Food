@@ -145,7 +145,7 @@ function sortBySelect() {
   }
 }
 //
-//
+
 //Find by field
 function searchFood() {
   let findCostbtn = document.getElementById("findByCost").checked;
