@@ -117,7 +117,7 @@ function sortBySelect() {
   let selectValue = document.getElementById("foodSort").value;
   //sort by Name
   if (selectValue == "option2") {
-    getList.sort(function (item1, item2) {
+    getList.sort((item1, item2) => {
       if (item1.nameFood < item2.nameFood) {
         return -1;
       }
@@ -131,7 +131,7 @@ function sortBySelect() {
   }
   // sort by cost
   else if (selectValue == "option3") {
-    getList.sort(function (item1, item2) {
+    getList.sort((item1, item2) => {
       if (item1.costFood < item2.costFood) {
         return -1;
       }
@@ -151,16 +151,16 @@ function searchFood() {
   let findCostbtn = document.getElementById("findByCost").checked;
   let searchInput = document.getElementById("searchInput").value;
   if (findCostbtn === true) {
-    getList = getList.filter(function (listFind) {
+    getList = getList.filter((listFind) => {
       return listFind.costFood === searchInput;
     });
     console.log(getList);
     this.renderList();
   } else {
-    getList = getList.filter(function (listFind) {
+    getList = getList.filter((listFind) => {
       return listFind.nameFood === searchInput;
     });
     console.log(getList);
-    this.renderList();s
+    this.renderList();
   }
 }
