@@ -24,7 +24,7 @@
         <label>Food cost</label>
         <input class="food-input" type="text" name="cost" id="foodCost" />
         <div id="cost-messages"></div>
-        <button onclick="updateFood()" type="submit" id="btn-add">Add</button>
+        <button onclick="updateFood()" id="btn-add">Add</button>
       </form>
     </div>
     <div class="list-food" id="list-foods">
@@ -34,6 +34,7 @@
       >
         <label>---Select sort by : ---</label>
         <select id="foodSort" form="foodform" onchange="sortBySelect()">
+          <option value="option1">by ID</option>
           <option value="option2">by Name</option>
           <option value="option3">by Cost</option>
         </select>
@@ -45,7 +46,12 @@
           <input type="radio" name="colors" id="findByCost" />By Cost
         </div>
         <div class="form-input">
-          <input id="searchInput" type="text" placeholder="find by content" />
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="find by content"
+            onkeyup="searchFood()"
+          />
           <button class="btnpri" id="searchBtn" onclick="searchFood()">
             Search
           </button>
