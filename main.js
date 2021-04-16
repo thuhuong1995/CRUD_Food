@@ -1,4 +1,7 @@
 const form = document.forms["formFood"];
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+});
 // Declare
 let getList = localStorage.getItem("getList")
   ? JSON.parse(localStorage.getItem("getList"))
@@ -21,15 +24,24 @@ function updateFood() {
   let idFood = getID.value;
   let nameFood = getName.value;
   let costFood = getCost.value;
-  if (!nameFood) {
+
+  let listID = getList.reduce((list, item) => {
+    return list.concat(item.idFood);
+  }, []);
+  const isValid = listID.includes(idFood);
+  if (isValid) {
+    document.getElementById("id-messages").innerHTML =
+      "ID is exist, please check !!!";
+  } else if (!nameFood) {
     document.getElementById("name-messages").innerHTML =
       "Name is not invalid, please check !";
     nameFood = "";
   } else {
     document.getElementById("name-messages").innerHTML = "";
+    document.getElementById("id-messages").innerHTML = "";
   }
 
-  if (nameFood) {
+  if (!isValid && nameFood) {
     if (currentID === "") {
       getList.push({
         idFood: idFood,
@@ -37,7 +49,7 @@ function updateFood() {
         costFood: costFood,
       });
     } else {
-      getList.splice(currentID, 1, {
+      getList.splice(currentID, 0, {
         idFood,
         nameFood,
         costFood,
@@ -76,6 +88,7 @@ function renderList() {
             | <a href='#' onclick = "deleteFood(${food.idFood})">Delete</a></td>
       </tr>
       `;
+
     getID.value = ++id;
   });
   document.getElementById("list-food").innerHTML = listFood;
@@ -88,13 +101,12 @@ function editID(id) {
     return food.idFood == id;
   }
   let foodfinded = getList.find(foodFind);
-
   currentID = getList.indexOf(foodfinded);
-
+  getList.splice(currentID, 1);
   getID.value = foodfinded["idFood"];
   getName.value = foodfinded["nameFood"];
   getCost.value = foodfinded["costFood"];
-
+  getID.style.pointerEvents = "none";
   chooseBtn.innerHTML = "Save";
 }
 
@@ -102,7 +114,6 @@ function editID(id) {
 
 const deleteFood = (id) => {
   const indexFind = getList.findIndex((food) => food.idFood == id);
-
   if (indexFind > -1) {
     const confirmDelete = confirm("Are you sure that delete this Food ???");
     if (confirmDelete) {

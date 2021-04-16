@@ -1,9 +1,7 @@
 .food-input {
   margin: 5px 50px;
 }
-.food-input--id {
-  pointer-events: none;
-}
+
 #test {
   margin: auto 50px;
   float: left;
