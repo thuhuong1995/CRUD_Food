@@ -3,10 +3,12 @@ form.addEventListener("submit", function (e) {
   e.preventDefault();
 });
 // Declare
-let getList = localStorage.getItem("getList")
-  ? JSON.parse(localStorage.getItem("getList"))
+let menuFood = localStorage.getItem("menuFood")
+  ? JSON.parse(localStorage.getItem("menuFood"))
   : [];
-let chooseBtn = document.getElementById("btn-add");
+let updateBtn = document.getElementById("btn-update");
+let foodSort = document.getElementById("foodSort");
+let deleteBtn = document.getElementById("delete-btn");
 
 let getID = document.getElementById("foodID");
 let getName = document.getElementById("foodName");
@@ -14,18 +16,18 @@ let getCost = document.getElementById("foodCost");
 
 let findNamebtn = document.getElementById("findByName");
 let searchInput = document.getElementById("searchInput");
-
+let bodyReload = document.getElementsByTagName("body");
 let currentID = "";
 document.getElementById("foodID").value = 1;
-
-//add & edit item
-
+//
+// add & save btn
+updateBtn.addEventListener("click", updateFood);
 function updateFood() {
   let idFood = getID.value;
   let nameFood = getName.value;
   let costFood = getCost.value;
 
-  let listID = getList.reduce((list, item) => {
+  let listID = menuFood.reduce((list, item) => {
     return list.concat(item.idFood);
   }, []);
   const isValid = listID.includes(idFood);
@@ -43,21 +45,21 @@ function updateFood() {
 
   if (!isValid && nameFood) {
     if (currentID === "") {
-      getList.push({
+      menuFood.push({
         idFood: idFood,
         nameFood: nameFood,
         costFood: costFood,
       });
     } else {
-      getList.splice(currentID, 0, {
+      menuFood.splice(currentID, 0, {
         idFood,
         nameFood,
         costFood,
       });
       currentID = "";
-      chooseBtn.innerHTML = "Add";
+      updateBtn.innerHTML = "Add";
     }
-    localStorage.setItem("getList", JSON.stringify(getList));
+    localStorage.setItem("menuFood", JSON.stringify(menuFood));
     renderList();
 
     nameFood = document.getElementById("foodName").value = "";
@@ -65,8 +67,9 @@ function updateFood() {
   }
 }
 //render list
+bodyReload.addEventListener = ("load", renderList());
 function renderList() {
-  if (!getList.length) {
+  if (!menuFood.length) {
     return;
   }
   let listFood = `
@@ -77,15 +80,15 @@ function renderList() {
         <td > SELECT</td>
     </tr>
     `;
-  getList.forEach((food, id) => {
+  menuFood.forEach((food, id) => {
     id++;
     listFood += `
       <tr id = "tr-food">
           <td id= "td-id">${food.idFood}</td>
           <td id= "td-name"> ${food.nameFood}</td>
           <td id= "td-cost"> ${food.costFood}</td>
-          <td id= "td-select"><a href='#' id = "edit" onclick = "editID(${food.idFood})" >Edit</a> 
-            | <a href='#' onclick = "deleteFood(${food.idFood})">Delete</a></td>
+          <td id= "td-select"><a href='#' id = "edit-btn" onclick = "editID(${food.idFood})" >Edit</a> 
+            | <a href='#' id = "delete-btn" onclick = "deleteFood(${food.idFood})">Delete</a></td>
       </tr>
       `;
 
@@ -93,59 +96,57 @@ function renderList() {
   });
   document.getElementById("list-food").innerHTML = listFood;
 }
-
 // fill data to edit
 
 function editID(id) {
   function foodFind(food) {
     return food.idFood == id;
   }
-  let foodfinded = getList.find(foodFind);
-  currentID = getList.indexOf(foodfinded);
-  getList.splice(currentID, 1);
+  let foodfinded = menuFood.find(foodFind);
+  currentID = menuFood.indexOf(foodfinded);
+  menuFood.splice(currentID, 1);
   getID.value = foodfinded["idFood"];
   getName.value = foodfinded["nameFood"];
   getCost.value = foodfinded["costFood"];
   getID.style.pointerEvents = "none";
-  chooseBtn.innerHTML = "Save";
+  updateBtn.innerHTML = "Save";
 }
 
 //delete item by id
 
 const deleteFood = (id) => {
-  const indexFind = getList.findIndex((food) => food.idFood == id);
+  const indexFind = menuFood.findIndex((food) => food.idFood == id);
   if (indexFind > -1) {
     const confirmDelete = confirm("Are you sure that delete this Food ???");
     if (confirmDelete) {
-      getList.splice(indexFind, 1);
-      localStorage.setItem("getList", JSON.stringify(getList));
+      menuFood.splice(indexFind, 1);
+      localStorage.setItem("menuFood", JSON.stringify(menuFood));
       renderList();
     }
   }
 };
 
-const totalCost = getList.reduce(sumCost, 0);
+const totalCost = menuFood.reduce(sumCost, 0);
 
 function sumCost(cost, currentCost) {
   return cost + Number(currentCost.costFood);
 }
 document.getElementById("total").innerHTML = totalCost;
 
-//
 //Sort
-
+foodSort.addEventListener("change", sortBySelect);
 function sortBySelect() {
   let selectValue = document.getElementById("foodSort").value;
   //sort by ID
   if (selectValue === "option1") {
-    getList.sort((item1, item2) => {
+    menuFood.sort((item1, item2) => {
       return item1.idFood - item2.idFood;
     });
     renderList();
   }
   //sort by Name
   else if (selectValue === "option2") {
-    getList.sort((item1, item2) => {
+    menuFood.sort((item1, item2) => {
       if (item1.nameFood < item2.nameFood) {
         return -1;
       }
@@ -154,7 +155,7 @@ function sortBySelect() {
   }
   // sort by cost
   else if (selectValue === "option3") {
-    getList.sort((item1, item2) => {
+    menuFood.sort((item1, item2) => {
       return item1.costFood - item2.costFood;
     });
     renderList();
@@ -162,7 +163,7 @@ function sortBySelect() {
 }
 
 //Find by field
-
+searchInput.addEventListener("keyup", searchFood);
 function searchFood() {
   let findNamebtn = document.getElementById("findByName").checked;
   let convertValue = searchInput.value.toLocaleLowerCase();
@@ -170,12 +171,12 @@ function searchFood() {
     window.location.reload();
   }
   if (findNamebtn) {
-    getList = getList.filter((listFind) => {
+    menuFood = menuFood.filter((listFind) => {
       return listFind.nameFood.toLocaleLowerCase().includes(convertValue);
     });
     renderList();
   } else {
-    getList = getList.filter((listFind) => {
+    menuFood = menuFood.filter((listFind) => {
       return listFind.costFood.toLocaleLowerCase().includes(convertValue);
     });
     renderList();
