@@ -6,32 +6,33 @@ form.addEventListener("submit", function (e) {
 let menuFood = localStorage.getItem("menuFood")
   ? JSON.parse(localStorage.getItem("menuFood"))
   : [];
-let updateBtn = document.getElementById("btn-update");
-let foodSort = document.getElementById("foodSort");
-let deleteBtn = document.getElementById("delete-btn");
+const updateBtn = document.getElementById("btn-update");
+const foodSort = document.getElementById("foodSort");
+const deleteBtn = document.getElementById("delete-btn");
 
-let getID = document.getElementById("foodID");
-let getName = document.getElementById("foodName");
-let getCost = document.getElementById("foodCost");
+const getID = document.getElementById("foodID");
+const getName = document.getElementById("foodName");
+const getCost = document.getElementById("foodCost");
 
-let findNamebtn = document.getElementById("findByName");
-let searchInput = document.getElementById("searchInput");
-let bodyReload = document.getElementsByTagName("body");
-let currentID = "";
-document.getElementById("foodID").value = 1;
+const findNamebtn = document.getElementById("findByName");
+const searchInput = document.getElementById("searchInput");
+const bodyReload = document.getElementsByTagName("body");
+let currentID = null;
+getID.value = 1;
 //
 // add & save btn
 updateBtn.addEventListener("click", updateFood);
 function updateFood() {
+
   let idFood = getID.value;
   let nameFood = getName.value;
   let costFood = getCost.value;
 
-  let listID = menuFood.reduce((list, item) => {
-    return list.concat(item.idFood);
-  }, []);
-  const isValid = listID.includes(idFood);
-  if (isValid) {
+  const checkID = menuFood.some((idList)=>{
+    return idList.idFood === idFood;
+  });
+  
+  if (checkID) {
     document.getElementById("id-messages").innerHTML =
       "ID is exist, please check !!!";
   } else if (!nameFood) {
@@ -43,44 +44,46 @@ function updateFood() {
     document.getElementById("id-messages").innerHTML = "";
   }
 
-  if (!isValid && nameFood) {
-    if (currentID === "") {
+  if (!checkID && nameFood) {
+    if (currentID === null) {
       menuFood.push({
         idFood: idFood,
         nameFood: nameFood,
         costFood: costFood,
       });
     } else {
-      menuFood.splice(currentID, 0, {
+      let index = currentID;
+      menuFood.splice(index, 0, {
         idFood,
         nameFood,
         costFood,
       });
-      currentID = "";
+      currentID = null;
       updateBtn.innerHTML = "Add";
     }
     localStorage.setItem("menuFood", JSON.stringify(menuFood));
     renderList();
 
-    nameFood = document.getElementById("foodName").value = "";
-    costFood = document.getElementById("foodCost").value = "";
+    getName.value = "";
+    getCost.value = "";
   }
 }
+
 //render list
 bodyReload.addEventListener = ("load", renderList());
 function renderList() {
-  if (!menuFood.length) {
+   if (!menuFood.length) {
     return;
-  }
-  let listFood = `
+   }
+   let listFood = `
     <tr id = >
-        <td > ID</td>
-        <td > NAME</td>
-        <td > COST</td>
-        <td > SELECT</td>
+        <td >ID</td>
+        <td >NAME</td>
+        <td >COST</td>
+        <td >SELECT</td>
     </tr>
     `;
-  menuFood.forEach((food, id) => {
+   menuFood.forEach((food, id) => {
     id++;
     listFood += `
       <tr id = "tr-food">
@@ -88,34 +91,32 @@ function renderList() {
           <td id= "td-name"> ${food.nameFood}</td>
           <td id= "td-cost"> ${food.costFood}</td>
           <td id= "td-select"><a href='#' id = "edit-btn" onclick = "editID(${food.idFood})" >Edit</a> 
-            | <a href='#' id = "delete-btn" onclick = "deleteFood(${food.idFood})">Delete</a></td>
+          | <a href='#' id = "delete-btn" onclick = "deleteFood(${food.idFood})">Delete</a></td>
       </tr>
       `;
-
     getID.value = ++id;
   });
   document.getElementById("list-food").innerHTML = listFood;
 }
-// fill data to edit
 
+// fill data to edit
 function editID(id) {
-  function foodFind(food) {
-    return food.idFood == id;
-  }
-  let foodfinded = menuFood.find(foodFind);
-  currentID = menuFood.indexOf(foodfinded);
-  menuFood.splice(currentID, 1);
-  getID.value = foodfinded["idFood"];
-  getName.value = foodfinded["nameFood"];
-  getCost.value = foodfinded["costFood"];
+  const indexFind = menuFood.find((food)=>{
+    return food.idFood === id.toString();
+  });
+  const foodIndex = menuFood.indexOf(indexFind);
+  menuFood.splice(foodIndex, 1);
+  getID.value = indexFind["idFood"];
+  getName.value = indexFind["nameFood"];
+  getCost.value = indexFind["costFood"];
   getID.style.pointerEvents = "none";
   updateBtn.innerHTML = "Save";
+  currentID = foodIndex;
 }
 
 //delete item by id
-
 const deleteFood = (id) => {
-  const indexFind = menuFood.findIndex((food) => food.idFood == id);
+  const indexFind = menuFood.findIndex((food) => food.idFood === id.toString());
   if (indexFind > -1) {
     const confirmDelete = confirm("Are you sure that delete this Food ???");
     if (confirmDelete) {
@@ -125,40 +126,37 @@ const deleteFood = (id) => {
     }
   }
 };
-
 const totalCost = menuFood.reduce(sumCost, 0);
-
 function sumCost(cost, currentCost) {
   return cost + Number(currentCost.costFood);
 }
 document.getElementById("total").innerHTML = totalCost;
-
+//
 //Sort
 foodSort.addEventListener("change", sortBySelect);
 function sortBySelect() {
-  let selectValue = document.getElementById("foodSort").value;
-  //sort by ID
-  if (selectValue === "option1") {
-    menuFood.sort((item1, item2) => {
+  const selectValue = document.getElementById("foodSort").value;
+  switch(selectValue){
+    //sort by ID
+    case "option1": menuFood.sort((item1, item2) => {
       return item1.idFood - item2.idFood;
     });
     renderList();
-  }
-  //sort by Name
-  else if (selectValue === "option2") {
-    menuFood.sort((item1, item2) => {
+    break;
+    //sort by Name
+    case "option2": menuFood.sort((item1, item2) => {
       if (item1.nameFood < item2.nameFood) {
         return -1;
       }
     });
     renderList();
-  }
-  // sort by cost
-  else if (selectValue === "option3") {
-    menuFood.sort((item1, item2) => {
+    break;
+    //sort by Cost
+    case "option3": menuFood.sort((item1, item2) => {
       return item1.costFood - item2.costFood;
     });
     renderList();
+    break;
   }
 }
 
@@ -169,6 +167,7 @@ function searchFood() {
   let convertValue = searchInput.value.toLocaleLowerCase();
   if (!searchInput.value) {
     window.location.reload();
+    //Phan nay a muon khi xoa noi dung cua o input thi se tu render data ra ngoai
   }
   if (findNamebtn) {
     menuFood = menuFood.filter((listFind) => {
