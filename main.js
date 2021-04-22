@@ -54,7 +54,6 @@ function submitFood() {
         nameFood,
         costFood,
       });
-
       medialID = null;
       updateBtn.innerHTML = "Add";
     }
@@ -106,8 +105,8 @@ const editID = (id) => {
   menuFood.splice(indexFind, 1);
   // a cho cai nay de khi edit n se bo ID di
   // Neu khong co cai nay thi th ID n se k vuot qua dc validate
-  //
   medialID = indexFind;
+  // cai nay de luu index da lay dc cho th save voi add dung
 };
 
 //delete item by id
@@ -165,14 +164,14 @@ function searchFood() {
     //Phan nay a muon khi xoa noi dung cua o input thi se tu render data ra ngoai
   }
   if (findNamebtn) {
-    menuFood = menuFood.filter((listFind) => {
-      return listFind.nameFood.toLocaleLowerCase().includes(convertValue);
-    });
+    menuFood = menuFood.filter((listFind) =>
+      listFind.nameFood.toLocaleLowerCase().includes(convertValue)
+    );
     renderList(menuFood);
   } else {
-    menuFood = menuFood.filter((listFind) => {
-      return listFind.costFood.toLocaleLowerCase().includes(convertValue);
-    });
+    menuFood = menuFood.filter((listFind) =>
+      listFind.costFood.toLocaleLowerCase().includes(convertValue)
+    );
     renderList(menuFood);
   }
 }
