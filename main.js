@@ -3,7 +3,7 @@ form.addEventListener("submit", function (e) {
   e.preventDefault();
 });
 // Declare
-const updateBtn = document.getElementById("btn-update");
+const submitBtn = document.getElementById("btn-update");
 const foodSortSelect = document.getElementById("foodSortSelect");
 const deleteBtn = document.getElementById("delete-btn");
 
@@ -13,9 +13,9 @@ const costInput = document.getElementById("foodCost");
 
 const findNamebtn = document.getElementById("findByName");
 const searchInput = document.getElementById("searchInput");
-let medialID = null;
+let selectedID = null;
 // add & save btn
-updateBtn.addEventListener("click", submitFood);
+submitBtn.addEventListener("click", submitFood);
 function submitFood() {
   let idFood = idInput.value;
   let nameFood = nameInput.value;
@@ -42,35 +42,34 @@ function submitFood() {
     document.getElementById("name-messages").innerHTML = "";
   }
   if (idFood && !checkIDExist && nameFood) {
-    if (!medialID) {
+    if (!selectedID) {
       menuFood.push({
         idFood: idFood,
         nameFood: nameFood,
         costFood: costFood,
       });
+      console.log("push");
     } else {
-      menuFood.splice(medialID, 0, {
+      menuFood.splice(selectedID, 0, {
         idFood,
         nameFood,
         costFood,
       });
-      medialID = null;
-      updateBtn.innerHTML = "Add";
+      selectedID = null;
+      submitBtn.innerHTML = "Add";
     }
     localStorage.setItem("menuFood", JSON.stringify(menuFood));
-    renderList();
+    renderList(menuFood);
     idInput.value = "";
     nameInput.value = "";
     costInput.value = "";
   }
 }
-let menuFood = localStorage.getItem("menuFood")
-  ? JSON.parse(localStorage.getItem("menuFood"))
-  : [];
+let menuFood = JSON.parse(localStorage.getItem("menuFood")) || [];
 //render list
-window.addEventListener = ("load", renderList());
-function renderList(listFood) {
-  listFood = `
+window.addEventListener = ("load", renderList(menuFood));
+function renderList(menuFood) {
+  let listFood = `
     <tr>
         <td>ID</td>
         <td>NAME</td>
@@ -78,7 +77,7 @@ function renderList(listFood) {
         <td>SELECT</td>
     </tr>
     `;
-  menuFood.forEach((food, index) => {
+  menuFood.forEach((food) => {
     listFood += `
       <tr>
           <td>${food.idFood}</td>
@@ -89,23 +88,21 @@ function renderList(listFood) {
       </tr>
       `;
   });
-
   document.getElementById("list-food").innerHTML = listFood;
 }
 
 // fill data to edit
 const editID = (id) => {
   const indexFind = menuFood.findIndex((food) => food.idFood === id.toString());
-
   idInput.value = menuFood[indexFind]["idFood"];
   nameInput.value = menuFood[indexFind]["nameFood"];
   costInput.value = menuFood[indexFind]["costFood"];
   idInput.style.pointerEvents = "none";
-  updateBtn.innerHTML = "Save";
+  submitBtn.innerHTML = "Save";
   menuFood.splice(indexFind, 1);
   // a cho cai nay de khi edit n se bo ID di
   // Neu khong co cai nay thi th ID n se k vuot qua dc validate
-  medialID = indexFind;
+  selectedID = indexFind;
   // cai nay de luu index da lay dc cho th save voi add dung
 };
 
@@ -134,22 +131,26 @@ function sortBySelect() {
   switch (selectValue) {
     //sort by Name
     case "sortByName":
-      menuFood.sort((item1, item2) => {
+      let sortByName = menuFood.sort((item1, item2) => {
         if (item1.nameFood < item2.nameFood) {
           return -1;
         }
       });
-      renderList();
+      renderList(sortByName);
       break;
     //sort by Cost
     case "sortByCost":
-      menuFood.sort((item1, item2) => item1.costFood - item2.costFood);
-      renderList();
+      let sortByCost = menuFood.sort(
+        (item1, item2) => item1.costFood - item2.costFood
+      );
+      renderList(sortByCost);
       break;
     // default is sort by ID
     default:
-      menuFood.sort((item1, item2) => item1.idFood - item2.idFood);
-      renderList();
+      let sortByID = menuFood.sort(
+        (item1, item2) => item1.idFood - item2.idFood
+      );
+      renderList(sortByID);
       break;
   }
 }
@@ -164,14 +165,14 @@ function searchFood() {
     //Phan nay a muon khi xoa noi dung cua o input thi se tu render data ra ngoai
   }
   if (findNamebtn) {
-    menuFood = menuFood.filter((listFind) =>
+    let searchList = menuFood.filter((listFind) =>
       listFind.nameFood.toLocaleLowerCase().includes(convertValue)
     );
-    renderList(menuFood);
+    renderList(searchList);
   } else {
-    menuFood = menuFood.filter((listFind) =>
+    let searchList = menuFood.filter((listFind) =>
       listFind.costFood.toLocaleLowerCase().includes(convertValue)
     );
-    renderList(menuFood);
+    renderList(searchList);
   }
 }
