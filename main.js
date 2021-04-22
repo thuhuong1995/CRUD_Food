@@ -3,116 +3,112 @@ form.addEventListener("submit", function (e) {
   e.preventDefault();
 });
 // Declare
-let menuFood = localStorage.getItem("menuFood")
-  ? JSON.parse(localStorage.getItem("menuFood"))
-  : [];
 const updateBtn = document.getElementById("btn-update");
-const foodSort = document.getElementById("foodSort");
+const foodSortSelect = document.getElementById("foodSortSelect");
 const deleteBtn = document.getElementById("delete-btn");
 
-const getID = document.getElementById("foodID");
-const getName = document.getElementById("foodName");
-const getCost = document.getElementById("foodCost");
+const idInput = document.getElementById("foodID");
+const nameInput = document.getElementById("foodName");
+const costInput = document.getElementById("foodCost");
 
 const findNamebtn = document.getElementById("findByName");
 const searchInput = document.getElementById("searchInput");
-const bodyReload = document.getElementsByTagName("body");
-let currentID = null;
-getID.value = 1;
-//
+let medialID = null;
 // add & save btn
-updateBtn.addEventListener("click", updateFood);
-function updateFood() {
+updateBtn.addEventListener("click", submitFood);
+function submitFood() {
+  let idFood = idInput.value;
+  let nameFood = nameInput.value;
+  let costFood = costInput.value;
+  const checkIDExist = menuFood.some((item) => item.idFood === idFood);
 
-  let idFood = getID.value;
-  let nameFood = getName.value;
-  let costFood = getCost.value;
-
-  const checkID = menuFood.some((idList)=>{
-    return idList.idFood === idFood;
-  });
-  
-  if (checkID) {
+  if (!idFood) {
+    document.getElementById("id-messages").innerHTML =
+      "Please enter ID food!!!";
+  } else if (isNaN(idFood)) {
+    document.getElementById("id-messages").innerHTML = "ID must is a Number";
+    return;
+  } else if (checkIDExist) {
     document.getElementById("id-messages").innerHTML =
       "ID is exist, please check !!!";
-  } else if (!nameFood) {
+  } else {
+    document.getElementById("id-messages").innerHTML = "";
+  }
+  if (!nameFood) {
     document.getElementById("name-messages").innerHTML =
-      "Name is not invalid, please check !";
+      "Please enter name food";
     nameFood = "";
   } else {
     document.getElementById("name-messages").innerHTML = "";
-    document.getElementById("id-messages").innerHTML = "";
   }
-
-  if (!checkID && nameFood) {
-    if (currentID === null) {
+  if (idFood && !checkIDExist && nameFood) {
+    if (!medialID) {
       menuFood.push({
         idFood: idFood,
         nameFood: nameFood,
         costFood: costFood,
       });
     } else {
-      let index = currentID;
-      menuFood.splice(index, 0, {
+      menuFood.splice(medialID, 0, {
         idFood,
         nameFood,
         costFood,
       });
-      currentID = null;
+
+      medialID = null;
       updateBtn.innerHTML = "Add";
     }
     localStorage.setItem("menuFood", JSON.stringify(menuFood));
     renderList();
-
-    getName.value = "";
-    getCost.value = "";
+    idInput.value = "";
+    nameInput.value = "";
+    costInput.value = "";
   }
 }
-
+let menuFood = localStorage.getItem("menuFood")
+  ? JSON.parse(localStorage.getItem("menuFood"))
+  : [];
 //render list
-bodyReload.addEventListener = ("load", renderList());
-function renderList() {
-   if (!menuFood.length) {
-    return;
-   }
-   let listFood = `
-    <tr id = >
-        <td >ID</td>
-        <td >NAME</td>
-        <td >COST</td>
-        <td >SELECT</td>
+window.addEventListener = ("load", renderList());
+function renderList(listFood) {
+  listFood = `
+    <tr>
+        <td>ID</td>
+        <td>NAME</td>
+        <td>COST</td>
+        <td>SELECT</td>
     </tr>
     `;
-   menuFood.forEach((food, id) => {
-    id++;
+  menuFood.forEach((food, index) => {
     listFood += `
-      <tr id = "tr-food">
-          <td id= "td-id">${food.idFood}</td>
-          <td id= "td-name"> ${food.nameFood}</td>
-          <td id= "td-cost"> ${food.costFood}</td>
-          <td id= "td-select"><a href='#' id = "edit-btn" onclick = "editID(${food.idFood})" >Edit</a> 
-          | <a href='#' id = "delete-btn" onclick = "deleteFood(${food.idFood})">Delete</a></td>
+      <tr>
+          <td>${food.idFood}</td>
+          <td> ${food.nameFood}</td>
+          <td> ${food.costFood}</td>
+          <td><a href='#' onclick="editID(${food.idFood})">Edit</a> 
+          | <a href='#' onclick="deleteFood(${food.idFood})">Delete</a></td>
       </tr>
       `;
-    getID.value = ++id;
   });
+
   document.getElementById("list-food").innerHTML = listFood;
 }
 
 // fill data to edit
-function editID(id) {
-  const indexFind = menuFood.find((food)=>{
-    return food.idFood === id.toString();
-  });
-  const foodIndex = menuFood.indexOf(indexFind);
-  menuFood.splice(foodIndex, 1);
-  getID.value = indexFind["idFood"];
-  getName.value = indexFind["nameFood"];
-  getCost.value = indexFind["costFood"];
-  getID.style.pointerEvents = "none";
+const editID = (id) => {
+  const indexFind = menuFood.findIndex((food) => food.idFood === id.toString());
+
+  idInput.value = menuFood[indexFind]["idFood"];
+  nameInput.value = menuFood[indexFind]["nameFood"];
+  costInput.value = menuFood[indexFind]["costFood"];
+  idInput.style.pointerEvents = "none";
   updateBtn.innerHTML = "Save";
-  currentID = foodIndex;
-}
+  menuFood.splice(indexFind, 1);
+  // a cho cai nay de khi edit n se bo ID di
+  // Neu khong co cai nay thi th ID n se k vuot qua dc validate
+  //
+  medialID = indexFind;
+};
 
 //delete item by id
 const deleteFood = (id) => {
@@ -133,30 +129,29 @@ function sumCost(cost, currentCost) {
 document.getElementById("total").innerHTML = totalCost;
 //
 //Sort
-foodSort.addEventListener("change", sortBySelect);
+foodSortSelect.addEventListener("change", sortBySelect);
 function sortBySelect() {
-  const selectValue = document.getElementById("foodSort").value;
-  switch(selectValue){
-    //sort by ID
-    case "option1": menuFood.sort((item1, item2) => {
-      return item1.idFood - item2.idFood;
-    });
-    renderList();
-    break;
+  const selectValue = document.getElementById("foodSortSelect").value;
+  switch (selectValue) {
     //sort by Name
-    case "option2": menuFood.sort((item1, item2) => {
-      if (item1.nameFood < item2.nameFood) {
-        return -1;
-      }
-    });
-    renderList();
-    break;
+    case "sortByName":
+      menuFood.sort((item1, item2) => {
+        if (item1.nameFood < item2.nameFood) {
+          return -1;
+        }
+      });
+      renderList();
+      break;
     //sort by Cost
-    case "option3": menuFood.sort((item1, item2) => {
-      return item1.costFood - item2.costFood;
-    });
-    renderList();
-    break;
+    case "sortByCost":
+      menuFood.sort((item1, item2) => item1.costFood - item2.costFood);
+      renderList();
+      break;
+    // default is sort by ID
+    default:
+      menuFood.sort((item1, item2) => item1.idFood - item2.idFood);
+      renderList();
+      break;
   }
 }
 
@@ -173,11 +168,11 @@ function searchFood() {
     menuFood = menuFood.filter((listFind) => {
       return listFind.nameFood.toLocaleLowerCase().includes(convertValue);
     });
-    renderList();
+    renderList(menuFood);
   } else {
     menuFood = menuFood.filter((listFind) => {
       return listFind.costFood.toLocaleLowerCase().includes(convertValue);
     });
-    renderList();
+    renderList(menuFood);
   }
 }
